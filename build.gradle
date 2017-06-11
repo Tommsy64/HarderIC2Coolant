@@ -1,0 +1,101 @@
+buildscript {
+    repositories {
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.4.0'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.diffplug.gradle.spotless'
+
+ext {
+    name = 'Harder IC2 Coolent'
+    modId = 'hardercoolent'
+}
+
+version = version_major + '.' + version_minor + '.' + version_patch + '.' + getBuildNumber()
+group = 'com.tommsy.' + project.ext.modId // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = project.ext.modId + '_' + mcversion
+
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = mcversion + "-" + forgeversion
+    runDir = 'run'
+    mappings = mcp_mappings
+    makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    replace '@VERSION@', project.version
+    replace '@MOD_NAME@', project.ext.name
+    replace '@MOD_ID@', project.ext.modId
+}
+
+repositories {
+    maven {
+        name = 'ic2'
+        url = 'http://maven.ic2.player.to/'
+    }
+}
+
+dependencies {
+    // the 'provided' configuration is for optional dependencies that exist at compile-time but might not at runtime.
+    // the deobf configurations:  'deobfCompile' and 'deobfProvided' are the same as the normal compile and provided,
+    // except that these dependencies get remapped to your current MCP mappings
+
+    // If any of these dependencies are being marked as FAILED under "forgeGradleResovledDeobfProvided" run the "cleanCache" task.
+    deobfProvided "net.industrial-craft:industrialcraft-2:${ic2_version}:api"
+
+    compileOnly "org.projectlombok:lombok:1.16.+"
+}
+
+spotless {
+    java {
+        licenseHeaderFile 'spotless/license-header.txt'
+        // An import ordering file, exported from Eclipse
+        importOrderFile 'spotless/forge.importorder'
+        removeUnusedImports()
+        // XML file dumped out by the Eclipse formatter
+        eclipse().configFile('spotless/forge-format.xml')
+        trimTrailingWhitespace()
+    }
+    format 'misc', {
+        target '**/*.xml', '**/.gitignore', "*.properties", "*.gradle"
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    lineEndings 'PLATFORM_NATIVE'
+}
+task format(dependsOn: 'spotlessApply', group: 'spotless')
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property 'mod_id', project.ext.modId
+    inputs.property 'name', project.ext.name
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'mod_id':project.ext.modId, 'name':project.ext.name, 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+def getBuildNumber() {
+    return "$System.env.BUILD_NUMBER" != 'null' ? "$System.env.BUILD_NUMBER" : '0'
+}
+
+runClient {
+    jvmArgs "-Xdebug", "-Xnoagent", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000"
+}

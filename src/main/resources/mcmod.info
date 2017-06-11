@@ -1,0 +1,17 @@
+[
+{
+  "modid": "${mod_id}",
+  "name": "${name}",
+  "description": "A tiny mod to remove the IC2 coolent recipe that uses regular water.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/Tommsy64/HarderIC2Coolent",
+  "updateUrl": "",
+  "authorList": ["Tommsy64"],
+  "logoFile": "",
+  "screenshots": [],
+  "requiredMods": ["IC2"],
+  "dependencies": ["IC2"],
+  "useDependencyInformation": "true"
+}
+]
