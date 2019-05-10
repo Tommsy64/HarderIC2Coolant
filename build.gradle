@@ -4,8 +4,8 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
-        classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.4.0'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.23.0'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -50,7 +50,8 @@ dependencies {
     // If any of these dependencies are being marked as FAILED under "forgeGradleResovledDeobfProvided" run the "cleanCache" task.
     deobfProvided "net.industrial-craft:industrialcraft-2:${ic2_version}:api"
 
-    compileOnly "org.projectlombok:lombok:1.16.+"
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
 }
 
 spotless {
