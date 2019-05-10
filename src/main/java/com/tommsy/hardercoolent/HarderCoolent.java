@@ -1,6 +1,6 @@
 /*
  * A tiny mod to remove the IC2 coolent recipe that uses regular water.
- * Copyright (C) 2017  Thomas Pakh
+ * Copyright (C) 2019  Thomas Pakh
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,16 +17,15 @@
  */
 package com.tommsy.hardercoolent;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
 import ic2.api.recipe.ICannerEnrichRecipeManager.Input;
+import ic2.api.recipe.MachineRecipe;
 import ic2.api.recipe.Recipes;
 import lombok.Getter;
 import net.minecraftforge.fluids.FluidStack;
@@ -51,22 +50,28 @@ public class HarderCoolent {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        Map<Input, FluidStack> recipes = Recipes.cannerEnrich.getRecipes();
-        Set<Entry<Input, FluidStack>> entries = recipes.entrySet();
-        Iterator<Entry<Input, FluidStack>> iterator = entries.iterator();
+        Iterable<? extends MachineRecipe<Input, FluidStack>> recipes = Recipes.cannerEnrich.getRecipes();
+
+        Iterator<? extends MachineRecipe<Input, FluidStack>> iterator = recipes.iterator();
         while (iterator.hasNext()) {
-            Entry<Input, FluidStack> entry = iterator.next();
-            if (entry.getValue().getFluid().getName().equals("ic2coolant") &&
-                    entry.getKey().fluid.getFluid().getName().equals("water")) {
-                if (recipes.remove(entry.getKey(), entry.getValue())) {
-                    logger.info("Successfully removed coolent recipe.");
-                    return;
-                }
+            MachineRecipe<Input, FluidStack> recipe = iterator.next();
+            if (recipe.getOutput().getFluid().getName().equals("ic2coolant") && recipe.getInput().fluid.getFluid().getName().equals("water")) {
+                iterator.remove();
+                logger.info("Successfully removed coolent recipe.");
+                return;
             }
+        }
+
+        ArrayList<String> inputFluids = new ArrayList<>(), outputFluids = new ArrayList<>();
+        iterator = recipes.iterator();
+        while (iterator.hasNext()) {
+            MachineRecipe<Input, FluidStack> recipe = iterator.next();
+            inputFluids.add(recipe.getInput().fluid.getFluid().getName());
+            outputFluids.add(recipe.getOutput().getFluid().getName());
         }
         logger.error("Could not find coolent recipe.");
         Collector<CharSequence, ?, String> joiner = Collectors.joining(",", "[", "]");
-        logger.error("Avaiable canner enrichment input fluids: {}", recipes.keySet().stream().map(i -> i.fluid.getFluid().getName()).collect(joiner));
-        logger.error("Avaiable canner enrichment output fluids: {}", recipes.values().stream().map(f -> f.getFluid().getName()).collect(joiner));
+        logger.error("Avaiable canner enrichment input fluids: {}", inputFluids.stream().collect(joiner));
+        logger.error("Avaiable canner enrichment output fluids: {}", outputFluids.stream().collect(joiner));
     }
 }

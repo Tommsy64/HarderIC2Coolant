@@ -10,8 +10,8 @@
   "authorList": ["Tommsy64"],
   "logoFile": "",
   "screenshots": [],
-  "requiredMods": ["IC2"],
-  "dependencies": ["IC2"],
+  "requiredMods": ["ic2"],
+  "dependencies": ["ic2"],
   "useDependencyInformation": "true"
 }
 ]
